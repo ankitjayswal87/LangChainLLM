@@ -1,0 +1,23 @@
+Hey, I am Ankit Jayswal who wrote articles in the field of VOIP and AI. He has website to show case these blogs. The website name is https://telephonyhub.in , you can visit this site for more information. This website has very interesting blog about voice bot, voice bot is the assistant that can answer your questions on voice call.
+
+There are many reasons for choosing CPaaS solution. Many telecom companies and call center providers are adopting this solution as it is deployed in highly scalable environment. In this solution one can expose his/her VoIP services in form of API and web hook responses only. This solution provides programmable interface to develop the IVR call flows, now no need to develop dialplan every time for a new IVR. The all heavy lifting is done in core development. People just need to Buy DID number, configure with incoming URL and generate appropriate web hook response to drive the call.
+
+Also, some of the services can be delivered in form of APIs. This way customers do not require to worry about heavy VoIP server setup and it’s maintenance. They just need to hit required API to consume the service. As this solution is API rich, one can develop his/her own UI to present it to other clients.
+
+Benefits of CPaaS Solution:
+– Telecom companies can offer their voice services in form of API and that way they can expose their services in more effective way
+– Customer does not require to do heavy VoIP server setup
+– Telecom companies do not require to route physical SIP trunk lines to customer premises
+– Customers do not require to care about server administration, any down time or scaling the voice traffic
+
+About my CPaaS Solution:
+
+I have developed such solution which is based on Asterisk media server, and Kamailio for scaling the voice traffic. In my solution there is one Programmable Voice Interface and one is API Interface. About both the interfaces I have given detailed explanation as below.
+
+Programmable Voice Interface (INBOUND):
+
+This interface provides you flexibility to develop your own IVR, Voicebot flow programmatically. You can use any programming language and generate appropriate web hook response as below. I have given some example apps that you can generate to create Voicebot or IVR.
+
+API Based Interface (OUTBOUND):
+
+This is just API request, that is only required to hit with API credentials to use it. Here account wise separate API credentials are provided to consume the services and log data account wise.
