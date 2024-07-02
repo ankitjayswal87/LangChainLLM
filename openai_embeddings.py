@@ -26,7 +26,14 @@ embeddings = OpenAIEmbeddings()
 
 # LOAD VECTOR DATA FROM SAVED DATA ON DISK
 vector_data = FAISS.load_local("openai_vector_data",embeddings,allow_dangerous_deserialization=True)
-print("Loadded vector....")
+retriever = vector_data.as_retriever(search_type="similarity",search_kwargs={"k": 1},)
 query = "what is CPaaS solution"
 docs = vector_data.similarity_search(query)
-print(docs[0].page_content)
+#print(docs[0].page_content)
+
+data = retriever.batch(["what is CPaaS solution", "who is ankit jayswal"])
+print(data[0][0].page_content)
+print(data[0][0].metadata)
+
+print(data[1][0].page_content)
+print(data[1][0].metadata)
