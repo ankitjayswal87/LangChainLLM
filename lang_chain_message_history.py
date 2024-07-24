@@ -8,24 +8,15 @@ os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.chat_message_histories import SQLChatMessageHistory
+from langchain.chains import ConversationChain
+from langchain.memory import ConversationBufferWindowMemory
 
+llm = ChatOpenAI()
+memory = ConversationBufferWindowMemory(k=1)
 
-def get_session_history(session_id):
-    return SQLChatMessageHistory(session_id, "sqlite:///memory.db")
+conversation_chain = ConversationChain(llm=llm,memory=memory,verbose=True)
 
-prompt_template = ChatPromptTemplate.from_template("Hey, I am Ankit Jayswal")
-
-model = ChatOpenAI(temperature=0.6)
-parser = StrOutputParser()
-
-chain = prompt_template | model | parser
-
-runnable_with_history = RunnableWithMessageHistory(
-    chain,
-    get_session_history,
-)
-
-runnable_with_history.invoke(chain,config={'configurable': {'session_id': 'abc123'}})
+conversation_chain.predict(input="Hello, Ankit is Zalak's brother")
+conversation_chain.predict(input="Both are the kids of same parents")
+conversation_chain.predict(input="who is Zalak? answer in short")
+print(memory.buffer)
