@@ -1,2 +1,3 @@
-from langchain_community.llms import OpenAI
-from langchain.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
+
+model = ChatOpenAI()
