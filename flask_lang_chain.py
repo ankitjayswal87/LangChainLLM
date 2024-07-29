@@ -63,6 +63,19 @@ def llm_call_with_prompt_api():
 
     return jsonify(output)
 
+@app.route('/lang_chain_api/llm_call_with_structured_output',methods=['GET','POST'])
+def llm_call_with_structured_output_api():
+
+    some_json = request.get_json()
+    query = some_json['query']
+    output_schema = some_json['output_schema']
+
+    structured_model = model.with_structured_output(output_schema)
+    response = structured_model.invoke(query)
+    output = {"response": response}
+
+    return jsonify(output)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80,debug=True)
