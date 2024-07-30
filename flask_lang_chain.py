@@ -17,12 +17,15 @@ import mysql.connector
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
 
 os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 model = ChatOpenAI()
 parser = StrOutputParser()
+embeddings = OpenAIEmbeddings()
 
 # dbhost = os.getenv('HOST')
 # dbuser = os.getenv('DBUSER')
@@ -73,6 +76,28 @@ def llm_call_with_structured_output_api():
     structured_model = model.with_structured_output(output_schema)
     response = structured_model.invoke(query)
     output = {"response": response}
+
+    return jsonify(output)
+
+@app.route('/lang_chain_api/ask_to_vector_db',methods=['GET','POST'])
+def ask_to_vector_db_api():
+
+    some_json = request.get_json()
+    vector_db = some_json['vector_db']
+    search_type = some_json['search_type']
+    similar_results = some_json['similar_results']
+    query = some_json['query']
+
+    vector_data = FAISS.load_local(vector_db,embeddings,allow_dangerous_deserialization=True)
+    retriever = vector_data.as_retriever(search_type=search_type,search_kwargs={"k": similar_results},)
+    response = retriever.invoke(query)
+    #response = response[0].page_content
+    answer = []
+    for res in response:
+        ans = res.page_content
+        src = res.metadata['source']
+        answer.append({"answer":ans,"source":src})
+    output = {"response": answer}
 
     return jsonify(output)
 
