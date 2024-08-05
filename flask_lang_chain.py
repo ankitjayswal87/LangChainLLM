@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()
+from bs4 import BeautifulSoup
 
 from flask import Flask, jsonify, request, send_file, redirect,has_request_context,make_response
 from flask_limiter import Limiter
@@ -19,6 +20,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_core.runnables import RunnablePassthrough
+from langchain.chains.summarize import load_summarize_chain
+from langchain_community.document_loaders import WebBaseLoader
 
 os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
@@ -98,6 +102,52 @@ def ask_to_vector_db_api():
         src = res.metadata['source']
         answer.append({"answer":ans,"source":src})
     output = {"response": answer}
+
+    return jsonify(output)
+
+@app.route('/lang_chain_api/ask_to_vector_db_rag',methods=['GET','POST'])
+def ask_to_vector_db_rag_api():
+
+    some_json = request.get_json()
+    vector_db = some_json['vector_db']
+    #search_type = some_json['search_type']
+    #similar_results = some_json['similar_results']
+    query = some_json['query']
+
+    vector_data = FAISS.load_local(vector_db,embeddings,allow_dangerous_deserialization=True)
+    #retriever = vector_data.as_retriever(search_type=search_type,search_kwargs={"k": similar_results},)
+    retriever = vector_data.as_retriever()
+    template = """
+        Answer this question using the provided context only.
+
+        {question}
+
+        Context:
+        {context}
+    """
+
+    prompt = ChatPromptTemplate.from_template(template)
+    rag_chain = {"context":retriever,"question":RunnablePassthrough()} | prompt | model
+    response = rag_chain.invoke(query)
+
+    output = {"response": response.content}
+
+    return jsonify(output)
+
+@app.route('/lang_chain_api/summarize_web_article',methods=['GET','POST'])
+def summarize_web_article_api():
+
+    some_json = request.get_json()
+    web_url = some_json['web_url']
+    summarize_type = some_json['summarize_type']
+
+    loader = WebBaseLoader(web_url)
+    docs = loader.load()
+
+    chain = load_summarize_chain(model, chain_type=summarize_type)
+    result = chain.invoke(docs)
+
+    output = {"response": result["output_text"]}
 
     return jsonify(output)
 

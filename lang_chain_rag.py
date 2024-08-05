@@ -33,9 +33,9 @@ llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-1106")
 
 rag_chain = {"context":retriever,"question":RunnablePassthrough()} | prompt | llm
 
-response = rag_chain.invoke("let me know about ankit jayswal")
+response = rag_chain.invoke("what is programmable voice interface")
 
-print(llm.invoke("who is Ankit Jayswal").content)
+print(llm.invoke("who  is Ankit Jayswal").content)
 print("######################################################")
 print(response.content)
 
