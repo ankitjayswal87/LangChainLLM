@@ -23,6 +23,9 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.runnables import RunnablePassthrough
 from langchain.chains.summarize import load_summarize_chain
 from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.utilities import SQLDatabase
+from langchain.chains import create_sql_query_chain
+from langchain_community.agent_toolkits import create_sql_agent
 
 os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
@@ -148,6 +151,29 @@ def summarize_web_article_api():
     result = chain.invoke(docs)
 
     output = {"response": result["output_text"]}
+
+    return jsonify(output)
+
+@app.route('/lang_chain_api/talk_to_database',methods=['GET','POST'])
+def talk_to_database_api():
+
+    some_json = request.get_json()
+    db_user = some_json['db_user']
+    db_password = some_json['db_password']
+    db_name = some_json['db_name']
+    template = some_json['template']
+    query = some_json['query']
+    print(query)
+
+    mysql_uri = 'mysql+mysqlconnector://'+db_user+':'+db_password+'@localhost:3306/'+db_name
+    db = SQLDatabase.from_uri(mysql_uri)
+
+    prompt_template = ChatPromptTemplate.from_template(template)
+    agent_executor = create_sql_agent(model, db=db, agent_type="openai-tools", verbose=True)
+
+    response = agent_executor.run(prompt_template.format_prompt(user_query=query))
+
+    output = {"response": response}
 
     return jsonify(output)
 
