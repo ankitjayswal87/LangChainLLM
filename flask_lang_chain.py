@@ -26,6 +26,7 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.utilities import SQLDatabase
 from langchain.chains import create_sql_query_chain
 from langchain_community.agent_toolkits import create_sql_agent
+from langchain_core.pydantic_v1 import BaseModel, Field
 
 os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
@@ -33,6 +34,22 @@ os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 model = ChatOpenAI()
 parser = StrOutputParser()
 embeddings = OpenAIEmbeddings()
+
+tagging_prompt = ChatPromptTemplate.from_template(
+    """
+    Extract the desired information from the following passage.
+
+    Only extract the properties mentioned in the 'Classification' function.
+
+    Passage:
+    {input}
+    """
+    )
+
+class Classification(BaseModel):
+    sentiment: str = Field(description="The sentiment of the text")
+    aggressiveness: int = Field(description="How aggressive the text is on a scale from 1 to 10")
+    language: str = Field(description="The language the text is written in")
 
 # dbhost = os.getenv('HOST')
 # dbuser = os.getenv('DBUSER')
@@ -174,6 +191,24 @@ def talk_to_database_api():
     response = agent_executor.run(prompt_template.format_prompt(user_query=query))
 
     output = {"response": response}
+
+    return jsonify(output)
+
+@app.route('/lang_chain_api/classification_llm_call',methods=['GET','POST'])
+def classification_llm_call_api():
+
+    some_json = request.get_json()
+    query = some_json['query']
+
+    tagging_llm = model.with_structured_output(Classification)
+    tagging_chain = tagging_prompt | tagging_llm
+
+    res = tagging_chain.invoke({"input": query})
+    sentiment = res.sentiment
+    aggressiveness = res.aggressiveness
+    language = res.language
+
+    output = {"response": {"sentiment":sentiment,"aggressiveness":aggressiveness,"language":language}}
 
     return jsonify(output)
 
