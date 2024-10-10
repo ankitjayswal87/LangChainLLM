@@ -13,7 +13,8 @@ os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 
-loader = PyPDFLoader("BuildingChatBotsWithTwilio.pdf")
+#loader = PyPDFLoader("BuildingChatBotsWithTwilio.pdf")
+loader = PyPDFLoader("/home/ankit/Downloads/motor_vehicle.pdf")
 pages = loader.load_and_split()
 #print(pages)
 
@@ -36,5 +37,6 @@ vector_data = FAISS.from_documents(pages, embeddings)
 retriever = vector_data.as_retriever(search_type="similarity",search_kwargs={"k": 1},)
 
 chain = {"context":retriever,"question":RunnablePassthrough()} | prompt | model | parser
-response = chain.invoke("benefits of chatbot")
+#response = chain.invoke("benefits of chatbot")
+response = chain.invoke("is third party insurance is sufficient for driving a car all over india?")
 print(response)

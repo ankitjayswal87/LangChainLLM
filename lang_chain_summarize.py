@@ -12,7 +12,8 @@ os.environ["MISTRAL_API_KEY"] = os.getenv('MISTRAL_API_KEY')
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 
-loader = WebBaseLoader("https://telephonyhub.in/2023/01/13/how-to-make-auto-dialer-with-asterisk/")
+#loader = WebBaseLoader("https://telephonyhub.in/2023/01/13/how-to-make-auto-dialer-with-asterisk/")
+loader = WebBaseLoader("https://visitsou.com/complete-travel-guide-to-statue-of-unity-2021/")
 docs = loader.load()
 
 llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-1106")
