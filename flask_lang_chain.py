@@ -16,6 +16,7 @@ import uuid
 import mysql.connector
 
 from langchain_openai import ChatOpenAI
+from langchain_community.llms import Ollama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import OpenAIEmbeddings
@@ -32,6 +33,7 @@ os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 model = ChatOpenAI()
+model_ollama = Ollama(model="gemma:2b")
 parser = StrOutputParser()
 embeddings = OpenAIEmbeddings()
 
@@ -64,9 +66,16 @@ def simple_llm_call_api():
 
     some_json = request.get_json()
     query = some_json['query']
-    
-    response = model.invoke(query)
-    output = {"response": response.content}
+    llm_model = some_json['model']
+
+    if llm_model=='ollama':
+        print('ollama selected...')
+        response = model_ollama.invoke(query)
+        output = {"response": response}
+    elif llm_model=='openai':
+        print('openai selected...')
+        response = model.invoke(query)
+        output = {"response": response.content}
 
     return jsonify(output)
 
