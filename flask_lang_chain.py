@@ -53,6 +53,11 @@ class Classification(BaseModel):
     aggressiveness: int = Field(description="How aggressive the text is on a scale from 1 to 10")
     language: str = Field(description="The language the text is written in")
 
+# class StructuredOutput(BaseModel):
+#     game: str = Field(description="The sport in sentence")
+#     player: int = Field(description="The player in the sport")
+#     score: str = Field(description="Get highest score of player")
+
 # dbhost = os.getenv('HOST')
 # dbuser = os.getenv('DBUSER')
 # dbpassword = os.getenv('DBPASSWORD')
@@ -85,6 +90,7 @@ def llm_call_with_prompt_api():
     some_json = request.get_json()
     template = some_json['template']
     fields = some_json['fields']
+    llm_model = some_json['model']
     number_of_fields = len(fields)+1
 
     field_dict = {}
@@ -93,7 +99,10 @@ def llm_call_with_prompt_api():
         field_dict[temp_field] = fields[temp_field]
 
     prompt = ChatPromptTemplate.from_template(template)
-    chain = prompt | model | parser
+    if llm_model=='openai':
+        chain = prompt | model | parser
+    elif llm_model=='ollama':
+        chain = prompt | model_ollama | parser
     response = chain.invoke(field_dict)
     output = {"response": response}
 
@@ -105,9 +114,14 @@ def llm_call_with_structured_output_api():
     some_json = request.get_json()
     query = some_json['query']
     output_schema = some_json['output_schema']
+    llm_model = some_json['model']
 
-    structured_model = model.with_structured_output(output_schema)
-    response = structured_model.invoke(query)
+    if llm_model=='openai':
+        structured_model = model.with_structured_output(output_schema)
+        response = structured_model.invoke(query)
+    elif llm_model=='ollama':
+        #structured_model = model_ollama.with_structured_output(StructuredOutput)
+        response = "kindly use 'openai' model for this API call"
     output = {"response": response}
 
     return jsonify(output)
@@ -169,11 +183,15 @@ def summarize_web_article_api():
     some_json = request.get_json()
     web_url = some_json['web_url']
     summarize_type = some_json['summarize_type']
+    llm_model = some_json['model']
 
     loader = WebBaseLoader(web_url)
     docs = loader.load()
 
-    chain = load_summarize_chain(model, chain_type=summarize_type)
+    if llm_model=='openai':
+        chain = load_summarize_chain(model, chain_type=summarize_type)
+    elif llm_model=='ollama':
+        chain = load_summarize_chain(model_ollama, chain_type=summarize_type)
     result = chain.invoke(docs)
 
     output = {"response": result["output_text"]}
