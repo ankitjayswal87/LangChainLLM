@@ -27,13 +27,14 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.utilities import SQLDatabase
 from langchain.chains import create_sql_query_chain
 from langchain_community.agent_toolkits import create_sql_agent
+from langchain.agents import AgentType
 from langchain_core.pydantic_v1 import BaseModel, Field
 
 os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGCHAIN_API_KEY')
 model = ChatOpenAI()
-model_ollama = Ollama(model="gemma:2b")
+model_ollama = Ollama(model="gemma:2b") #Ollama(model = "llama3.1")
 parser = StrOutputParser()
 embeddings = OpenAIEmbeddings()
 
@@ -212,8 +213,11 @@ def talk_to_database_api():
     mysql_uri = 'mysql+mysqlconnector://'+db_user+':'+db_password+'@localhost:3306/'+db_name
     db = SQLDatabase.from_uri(mysql_uri)
 
+    #llm = Ollama(model = "llama3.1")
+
     prompt_template = ChatPromptTemplate.from_template(template)
     agent_executor = create_sql_agent(model, db=db, agent_type="openai-tools", verbose=True)
+    #agent_executor = create_sql_agent(llm, db = db, agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose = True)
 
     response = agent_executor.run(prompt_template.format_prompt(user_query=query))
 
